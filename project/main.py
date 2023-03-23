@@ -29,7 +29,7 @@ TRAP_DOOR_MOTOR = Motor('D')
 MOTOR_POWER_LIMIT = 80 # Power limit for all motors
 MOTOR_SPEED_LIMIT = 300 # speed limit for all motors
 
-WHEEL_SPEED = 80 # default wheel speed (dps)
+WHEEL_SPEED = 100 # default wheel speed (dps)
 WHEEL_DELTA_SPEED = 150 # how much we speed up by when making a turn (dps)
 
 ROTATING_PLATFORM_SPEED = 300 # how fast the rotating platform spins (dps)
@@ -37,12 +37,12 @@ TRAP_DOOR_SPEED = 300 # how fast the trap door opens and closes (dps)
 
 
 # *** CONSTANTS FOR ROTATING THE ROTATING PLATFORM BASED ON OUR TESTS ***
-RED_DEGREES = 90
-ORANGE_DEGREES = 140
-YELLOW_DEGREES = 180
-GREEN_DEGREES = 235
-BLUE_DEGREES = 280
-PURPLE_DEGREES = 325
+RED_DEGREES = 0
+ORANGE_DEGREES = 47
+YELLOW_DEGREES = 92
+GREEN_DEGREES = 137
+BLUE_DEGREES = 182
+PURPLE_DEGREES = 227
 
 def init_motor(motor):
     """
@@ -79,8 +79,10 @@ def drive():
     global green_counter # counts the # of green zones detected
     global prev_color # previous color detected by the driving color sensor
     global delivering # heading out to 6 delivery zones vs back to loading bay; determines which way we need to turn
-    global looking # looking for a delivery zone (set to true once green has been detected)
+    global looking #looking for a delivery zone (set to true once green has been detected)
     global driving
+    global left_delivery_zone
+    
 
     # perform driving if in the driving state
     if driving:
@@ -89,17 +91,51 @@ def drive():
         driving_rgb = DRIVING_COLOR_SENSOR.get_rgb()
         delivery_rgb = DELIVERY_COLOR_SENSOR.get_rgb()
         driving_color_detected = ""
+        color_deliv_box=""
         if None not in driving_rgb:
             driving_color_detected = color_detection_drive(driving_rgb)
         delivery_color_detected = ""
         if None not in delivery_rgb:
             delivery_color_detected = color_detection_delivery(delivery_rgb)
-
+        
+        print(delivery_color_detected)
+        print(looking)
         
         if looking and delivery_color_detected != "white":
-            # carry out the delivery according to the color of the delivery zone detected
-            perform_delivery(delivery_color_detected)
-                    
+            left_delivery_zone = False
+            print(delivery_rgb)
+            color_deliv_counter = 0
+            list_deliv_colors = []
+            rgb = DELIVERY_COLOR_SENSOR.get_rgb()
+            while (color_deliv_counter<9):
+                list_deliv_colors.append(color_detection_delivery(rgb))
+                print(color_detection_delivery(rgb))
+                color_deliv_counter+=1
+            
+            color_deliv_box = find_avg_color(list_deliv_colors)
+            perform_delivery(color_deliv_box)
+            left_delivery_zone = True
+            
+        if looking and left_delivery_zone == True and delivery_color_detected == "white":
+            #perform_delivery(color_deliv_box)
+            print("dropping")
+             
+#         if looking and delivery_color_detected != "white":
+#             # carry out the delivery according to the color of the delivery zone detected
+#             print(delivery_rgb)
+#             color_deliv_counter = 0
+#             list_deliv_colors = []
+#             rgb = DELIVERY_COLOR_SENSOR.get_rgb()
+#             while (color_deliv_counter<9):
+#                 list_deliv_colors.append(color_detection_delivery(rgb))
+#                 print(color_detection_delivery(rgb))
+#                 color_deliv_counter+=1
+#             
+#             color_deliv_box = find_avg_color(list_deliv_colors)
+#             perform_delivery(color_deliv_box)
+            
+            
+                
         if driving_color_detected == "blue":
             # blue is on the left when delivering, so turn right
             if delivering:    
@@ -108,6 +144,7 @@ def drive():
                 turn_left()
             # increment the number of delivery zones (if necessary)
             count_delivery_zones()
+            start_looking()
             # set the previous color (allows us to detected green strip delivery zones)
             prev_color = "blue"
         elif driving_color_detected == "red":
@@ -118,16 +155,17 @@ def drive():
                turn_right()
             # increment the number of delivery zones (if necessary)
             count_delivery_zones()
+            start_looking()
             prev_color = "red"
         elif driving_color_detected == "white":
             # white, so we continue straight
             continue_straight()
             # increment the number of delivery zones (if necessary)
             count_delivery_zones()
+            start_looking()
             prev_color = "white"
         elif driving_color_detected == "green":
             # time to begin looking for a delivery zone
-            looking = True
             prev_color = "green"
         elif driving_color_detected == "yellow" and not delivering:
             # we've seen yellow, so now it is time to rotate the opposite direction and stop driving
@@ -140,6 +178,19 @@ def drive():
         # we're not in the driving state as the driving boolean is not true
         # stop the robot
         stop()
+
+def start_looking():
+    global prev_color
+    global looking
+    if prev_color == "green":
+        looking = True
+        
+def find_avg_color(lst):
+    color_counter = [lst.count("red"), lst.count("orange"), lst.count("yellow"),
+                     lst.count("green"), lst.count("blue"), lst.count("purple")]
+    color_list = ["red", "orange", "yellow", "green", "blue", "purple"]
+    maximum = color_counter.index(max(color_counter))
+    return color_list[maximum]
 
 def rotate_robot(at_loading_bay):
     """
@@ -178,6 +229,7 @@ def rotate_robot(at_loading_bay):
 
 def count_delivery_zones():
     global prev_color
+    global green_counter
     global delivering
     if prev_color == "green" and delivering:
         # increment the number of delivery zones we've seen as 
@@ -229,12 +281,14 @@ def perform_delivery(delivery_color_detected):
     function to perform a delivery based on the color that has been detected
     """
     global green_counter
+    global looking
     not_delivered = True
     # stop the driving
     stop()
 
     while not_delivered:
         # rotate to the corresponding colored cube
+        print(delivery_color_detected)
         rotate_platform(delivery_color_detected)
         # open and close the trap door
         open_trap_door()
@@ -242,10 +296,14 @@ def perform_delivery(delivery_color_detected):
         reset_to_reference_angle()
         not_delivered = False
     
+    # we've delivered the cube, reset to not be looking for a delivery zone
+    looking = False
+    
     # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
-    if green_counter == 5:
+    if green_counter == 6:
         # we're at the final delivery zone and not the loading, so rotate the robot
         rotate_robot(False)
+        
 
 def rotate_platform(delivery_color_detected):
     """
@@ -262,25 +320,29 @@ def rotate_platform(delivery_color_detected):
         ROTATING_PLATFORM_MOTOR.set_position(PURPLE_DEGREES)
     elif delivery_color_detected == "green":
         ROTATING_PLATFORM_MOTOR.set_position(GREEN_DEGREES)
-    else:
+    elif delivery_color_detected == "blue":
         ROTATING_PLATFORM_MOTOR.set_position(BLUE_DEGREES)
+    else:
+        reset_to_reference_angle()
     
     # sleep for 6 seconds in order to wait for the platform to get into position
-    sleep(6)
+    sleep(3)
 
-
+    
 def reset_to_reference_angle():
     """
     function to reset the rotating dial back to its starting position
     """
-    ROTATING_PLATFORM_MOTOR.set_position(-5)
-    sleep(6)
+    ROTATING_PLATFORM_MOTOR.set_position(-15)
+    sleep(3)
     
     
 def run():
     """The run method contains a while loop to constantly poll our input touch sensors
     and call helper methods to perform corresponding functionalities"""
     try:
+        global left_delivery_zone
+        left_delivery_zone = False
         # global variables are initialized here
         global green_counter
         green_counter = 0 # number of delivery zones detected
@@ -289,7 +351,7 @@ def run():
         global delivering
         global looking
         global driving
-        driving = False # not in the driving state until we press the touch sensor to initiate driving
+        driving = True # not in the driving state until we press the touch sensor to initiate driving
         delivering = True # boolean to check if we are heading out on the path towards delivery zones.
         looking = False # boolean that turns true after we've detected the green zone to begin detecting delivery zones
         # motor initializations
@@ -299,12 +361,14 @@ def run():
         init_motor(ROTATING_PLATFORM_MOTOR)
         while True:
             # constantly poll the driving function within a while loop
-            if TS.is_pressed():
-                # toggle the driving state if the ts has been pressed
-                driving = not driving
-                sleep(1)
             drive()
             sleep(SLEEP)
+#             if TS.is_pressed():
+#                 # toggle the driving state if the ts has been pressed
+#                 driving = True
+#                 print(driving)
+#             drive()
+#             sleep(SLEEP)
         
 
     except KeyboardInterrupt:
