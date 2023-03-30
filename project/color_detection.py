@@ -10,8 +10,8 @@ normgR = gR / sqrt(pow(rR, 2) + pow(gR, 2) + pow(bR, 2))
 normbR = bR / sqrt(pow(rR, 2) + pow(gR, 2) + pow(bR, 2))
 
 # (R, G, B) average for red from our tests for the DELIVERY sensor
-rRDel = 313
-gRDel = 58
+rRDel = 200
+gRDel = 30
 bRDel = 30
 normrRDel = rRDel / sqrt(pow(rRDel, 2) + pow(gRDel, 2) + pow(bRDel, 2))
 normgRDel = gRDel / sqrt(pow(rRDel, 2) + pow(gRDel, 2) + pow(bRDel, 2))
@@ -27,9 +27,9 @@ normbO = bO / sqrt(pow(rO, 2) + pow(gO, 2) + pow(bO, 2))
 
 
 # (R, G, B) average for orange from our tests for the DELIVERY sensor
-rODel = 313
-gODel = 90
-bODel = 30
+rODel = 200
+gODel = 70
+bODel = 20
 normrODel = rODel / sqrt(pow(rODel, 2) + pow(gODel, 2) + pow(bODel, 2))
 normgODel = gODel / sqrt(pow(rODel, 2) + pow(gODel, 2) + pow(bODel, 2))
 normbODel = bODel / sqrt(pow(rODel, 2) + pow(gODel, 2) + pow(bODel, 2))
@@ -43,9 +43,9 @@ normgY = gY / sqrt(pow(rY, 2) + pow(gY, 2) + pow(bY, 2))
 normbY = bY / sqrt(pow(rY, 2) + pow(gY, 2) + pow(bY, 2))
 
 # (R, G, B) average for yellow from our tests for the DELIVERY sensor
-rYDel = 301
-gYDel = 208
-bYDel = 42
+rYDel = 166
+gYDel = 130
+bYDel = 30
 normrYDel = rYDel / sqrt(pow(rYDel, 2) + pow(gYDel, 2) + pow(bYDel, 2))
 normgYDel = gYDel / sqrt(pow(rYDel, 2) + pow(gYDel, 2) + pow(bYDel, 2))
 normbYDel = bYDel / sqrt(pow(rYDel, 2) + pow(gYDel, 2) + pow(bYDel, 2))
@@ -59,9 +59,9 @@ normgG = gG / sqrt(pow(rG, 2) + pow(gG, 2) + pow(bG, 2))
 normbG = bG / sqrt(pow(rG, 2) + pow(gG, 2) + pow(bG, 2))
 
 # (R, G, B) average for green from our tests for the DELIVERY sensor
-rGDel = 54
-gGDel= 131
-bGDel= 37
+rGDel = 50
+gGDel= 107
+bGDel= 30
 normrGDel = rGDel / sqrt(pow(rGDel, 2) + pow(gGDel, 2) + pow(bGDel, 2))
 normgGDel = gGDel / sqrt(pow(rGDel, 2) + pow(gGDel, 2) + pow(bGDel, 2))
 normbGDel = bGDel / sqrt(pow(rGDel, 2) + pow(gGDel, 2) + pow(bGDel, 2))
@@ -75,9 +75,9 @@ normgB = gB / sqrt(pow(rB, 2) + pow(gB, 2) + pow(bB, 2))
 normbB = bB / sqrt(pow(rB, 2) + pow(gB, 2) + pow(bB, 2))
 
 # (R, G, B) average for blue from our tests for the DELIVERY sensor
-rBDel = 34.2
-gBDel = 38
-bBDel = 59.4
+rBDel = 30
+gBDel = 50
+bBDel = 80.4
 normrBDel = rBDel / sqrt(pow(rBDel, 2) + pow(gBDel, 2) + pow(bBDel, 2))
 normgBDel = gBDel / sqrt(pow(rBDel, 2) + pow(gBDel, 2) + pow(bBDel, 2))
 normbBDel = bBDel / sqrt(pow(rBDel, 2) + pow(gBDel, 2) + pow(bBDel, 2))
@@ -91,9 +91,9 @@ normgP = gP / sqrt(pow(rP, 2) + pow(gP, 2) + pow(bP, 2))
 normbP = bP / sqrt(pow(rP, 2) + pow(gP, 2) + pow(bP, 2))
 
 
-rPDel = 214
-gPDel = 35.6
-bPDel = 55.6
+rPDel = 140
+gPDel = 50.6
+bPDel = 40.6
 normrPDel = rPDel / sqrt(pow(rPDel, 2) + pow(gPDel, 2) + pow(bPDel, 2))
 normgPDel = gPDel / sqrt(pow(rPDel, 2) + pow(gPDel, 2) + pow(bPDel, 2))
 normbPDel = bPDel / sqrt(pow(rPDel, 2) + pow(gPDel, 2) + pow(bPDel, 2))
