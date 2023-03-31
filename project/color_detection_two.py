@@ -61,21 +61,21 @@ normgW = gW / sqrt(pow(rW, 2) + pow(gW, 2) + pow(bW, 2))
 normbW = bW / sqrt(pow(rW, 2) + pow(gW, 2) + pow(bW, 2))
 
 # (R, G, B) average for red from our tests for the DELIVERY sensor
-rRDel = 233
-gRDel = 30
-bRDel = 30
+rRDel = 220
+gRDel = 37
+bRDel = 26
 normrRDel = rRDel / sqrt(pow(rRDel, 2) + pow(gRDel, 2) + pow(bRDel, 2))
-rrStDev = 0.11983087
+rrStDev = 0.00362998
 normgRDel = gRDel / sqrt(pow(rRDel, 2) + pow(gRDel, 2) + pow(bRDel, 2))
-rgStDev =  0.5255912
+rgStDev =  0.01308116
 normbRDel = bRDel / sqrt(pow(rRDel, 2) + pow(gRDel, 2) + pow(bRDel, 2))
-rbStDev = 0.3402486
+rbStDev = 0.01249792
 
 
 # (R, G, B) average for orange from our tests for the DELIVERY sensor
-rODel = 200
+rODel = 260
 gODel = 70
-bODel = 20
+bODel = 30
 normrODel = rODel / sqrt(pow(rODel, 2) + pow(gODel, 2) + pow(bODel, 2))
 #orStDev = 
 normgODel = gODel / sqrt(pow(rODel, 2) + pow(gODel, 2) + pow(bODel, 2))
@@ -212,9 +212,9 @@ def color_detection_delivery(rgb):
 
   distances = {
     "white" : distanceFromWhite,
-    "red" : smallDistanceFromRed,
+    "redsmall" : smallDistanceFromRed,
     "red": distanceFromRed,
-    "red" : farDistanceFromRed,
+    "redfar" : farDistanceFromRed,
     "orange": distanceFromOrange,
     "yellow": distanceFromYellow,
     "green" : distanceFromGreen,
