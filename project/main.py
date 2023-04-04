@@ -7,40 +7,33 @@ Authors: Evan Boyd, Sahar Fathi, Jean Kaznji, Shyam Desai
 """
 
 """
-Yo software team
-Some changes I've made to the driving:
-white_counter in run(): that was an idea William suggested before and the goal of this is when you detect
-too many white colors in a row adjust() so the robot is less likely to go off track
-is_going_back and go_back(): The TA said that to be safe for the final demo it's better if the robot
-backs off when it gets to the loading bay (so the back of the robot is kinda aligned with the yellow line)
-
-btw sometimes the front color sensor just turns off and you have to restart the whole thing for it the work
-(we might have to change the wires for that)
-
-Enjoy!
-
+I documented some of the code but there's still some work I need to do
+I'm going to remove all the unnecessary comments and print statements
+go over my documentation again, to make sure everything is consistent and makes sense
+I just had to run to class but what we have here should be enough to finish with the software documentation
 """
 
 # imports 
 from utils.brick import TouchSensor, wait_ready_sensors, Motor, BP, EV3ColorSensor
 from time import sleep
 from math import sqrt
-from color_detection import color_detection_drive, color_detection_delivery # imports for all of our color functionalities
+from color_detection_two import color_detection_drive, color_detection_delivery # imports for all of our color functionalities
 import sys
 
-# BEGINNING OF CONSTANTS
-
 SLEEP = 0.05 # main run while loop sleep delay
-DRIVING_COLOR_SENSOR = EV3ColorSensor(2) # at front to control driving
-DELIVERY_COLOR_SENSOR = EV3ColorSensor(1) # detects delivery zones
-TS = TouchSensor(3) # touch sensor for stop start
+DRIVING_COLOR_SENSOR = EV3ColorSensor(2) # Initializing the front color sensor
+DELIVERY_COLOR_SENSOR = EV3ColorSensor(1) # Initializing the front color sensor
+TS = TouchSensor(3) # Initializing the delivery zone color sensor to start the navgiation sequence
 wait_ready_sensors(True)
+
+#Initializing the two NXT motors responsible for the robot navigation
 LEFT_WHEEL_MOTOR = Motor('A')
 RIGHT_WHEEL_MOTOR = Motor('B')
-ROTATING_PLATFORM_MOTOR = Motor('C')
-TRAP_DOOR_MOTOR = Motor('D')
 
+ROTATING_PLATFORM_MOTOR = Motor('C')#Initializing the NXT motor responsible for rotating the platform
+TRAP_DOOR_MOTOR = Motor('D')#Initializing the NXT motor responsible for opening and closing the trap doorr
 
+#Constant variables
 MOTOR_POWER_LIMIT = 80 # Power limit for all motors
 MOTOR_SPEED_LIMIT = 300 # speed limit for all motors
 
@@ -51,7 +44,7 @@ ROTATING_PLATFORM_SPEED = 300 # how fast the rotating platform spins (dps)
 TRAP_DOOR_SPEED = 300 # how fast the trap door opens and closes (dps)
 
 
-# *** CONSTANTS FOR ROTATING THE ROTATING PLATFORM BASED ON OUR TESTS ***
+# CONSTANTS FOR ROTATING THE ROTATING PLATFORM BASED ON OUR TESTS ***
 RED_DEGREES = 45+35
 ORANGE_DEGREES = 2*45 + 35
 YELLOW_DEGREES = 3*45 + 35
@@ -64,6 +57,9 @@ def init_motor(motor):
     function to initialize the motors used by our design. Sets the speed
     and power limits based on which motor has been passed to this function,
     and according to the CONSTANTS that we've set.
+    
+    Input - motor(Motor): the motor to be initialized
+    Output - NONE
     """
     try:
         # reset and then set our power to what we need
@@ -78,18 +74,23 @@ def open_trap_door():
     Function to open and close the trap door of our design.
     -180 means it is fully opened, 10 means fully closed.
     This function is called once a cube has been rotated to be above the trap door.
+    
+    Input - None
+    Output - None
     """
     TRAP_DOOR_MOTOR.set_position(-200)
     sleep(1)
     TRAP_DOOR_MOTOR.set_position(10)    
     sleep(1)
 
-
     
 def drive():
     """
     Controller for driving our robot. This is called continuously from the main while
-    loop in the run function. Keep track
+    loop in the run function. Keeps track of the system position and adjusts it accordingly
+    
+    Input - None
+    Output - None
     """
     global green_counter # counts the # of green zones detected
     global prev_color # previous color detected by the driving color sensor
@@ -99,6 +100,7 @@ def drive():
     global left_delivery_zone
     global delivery_order
     global going_back_counter
+    global driving_history
     
 
     # perform driving if in the driving state
@@ -115,15 +117,16 @@ def drive():
         delivery_color_detected = ""
         if None not in delivery_rgb:
             delivery_color_detected = color_detection_delivery(delivery_rgb)
+        driving_history.append(driving_color_detected)
+        print("Driving color: "+driving_color_detected)
         
         
         if looking:
-            print("driving color"+driving_color_detected)
             WHEEL_SPEED = 100
             WHEEL_DELTA_SPEED = 50
         
         
-        print("driving color: " + driving_color_detected)
+        #print("driving color: " + driving_color_detected)
         
         #isLookingForWhite=False
         
@@ -136,12 +139,13 @@ def drive():
             while (color_deliv_counter<12):
                 rgb = DELIVERY_COLOR_SENSOR.get_rgb()
                 list_deliv_colors.append(color_detection_delivery(rgb))
+                print(color_detection_delivery(rgb))
                 #print(color_detection_delivery(rgb))
                 color_deliv_counter+=1
                 
             color_deliv_box = find_avg_color(list_deliv_colors)
+            print("delivery colors: "+str(list_deliv_colors))
 #             perform_delivery(color_deliv_box)
-            print("here after perform")
             print(delivery_order)
             
             #isWhite = True if color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())=="white" else False
@@ -170,7 +174,9 @@ def drive():
             
         if prev_color == "green" and driving_color_detected!="green":
                 sleep(0.2)
-                adjust()    
+                adjust()
+                adjust()
+                looking=True
                 
         if driving_color_detected == "blue":
             # blue is on the left when delivering, so turn right
@@ -178,12 +184,8 @@ def drive():
                 turn_right()
             else:
                 turn_left()
-            # increment the number of delivery zones (if necessary)
-            count_delivery_zones()
-            start_looking()
             if prev_color == "green":
                 sleep(0.2)
-                adjust()
             # set the previous color (allows us to detected green strip delivery zones)
             prev_color = "blue"
         elif driving_color_detected == "red":
@@ -192,63 +194,64 @@ def drive():
                 turn_left()
             else:
                turn_right()
-            # increment the number of delivery zones (if necessary)
-            count_delivery_zones()
-            start_looking()
+               
             if prev_color == "green":
                 sleep(0.2)
-                adjust()
             prev_color = "red"
         elif driving_color_detected == "white":
             # white, so we continue straight
             continue_straight()
-            # increment the number of delivery zones (if necessary)
-            count_delivery_zones()
-            start_looking()
             if prev_color == "green":
                 sleep(0.2)
-                adjust()
             prev_color = "white"
         elif driving_color_detected == "green":
             # time to begin looking for a delivery zone
             prev_color = "green"
             
-        elif driving_color_detected == "yellow" and not delivering:
+        elif driving_color_detected == "yellow":
+            prev_color = "yellow"
+        
+        last_five_values=[driving_history[-1],driving_history[-2],driving_history[-3],driving_history[-4],driving_history[-5]]
+        if len(set(last_five_values))==1 and last_five_values[0]=="yellow" and not delivering:
             # we've seen yellow, so now it is time to rotate the opposite direction and stop driving
             rotate_robot(True)
             delivering = True
             driving = False
             green_counter=0
             going_back_counter=0
-        
+            
     else:
         if going_back_counter<30:
             go_back()
             going_back_counter+=1
-            print("GOING BACK: "+str(going_back_counter))
             # we're not in the driving state as the driving boolean is not true
             # stop the robot
         else:
             stop()
-
-def start_looking():
-    global prev_color
-    global looking
-    if prev_color == "green":
-        looking = True
+    #print("green counter test: "+str(green_counter))
         
 def find_avg_color(lst):
+    """
+    Function to find the most repeated element in a given list
+    
+    Input - lst(list): a list of Strings that contain the colors of the delivery zones
+    Output - color_list[maximum] (str): a string value of one of the delivery zone colors
+    """
     color_counter = [lst.count("red"), lst.count("orange"), lst.count("yellow"),
                      lst.count("green"), lst.count("blue"), lst.count("purple")]
     color_list = ["red", "orange", "yellow", "green", "blue", "purple"]
     maximum = color_counter.index(max(color_counter))
     return color_list[maximum]
 
+
 def rotate_robot(at_loading_bay):
     print("start rotating")
     """
-    function to robot to be within the track. Takes an input boolean
+    function to rotate the robot while staying within the track. Takes an input boolean
     to know if we're at the loading bay and then perform the corresponding rotation. 
+    
+    Input - at_loading_bay (bool): boolean to indicates where the robot is (last delivery zone or loading bay)
+    Output - None
     """
     if not at_loading_bay:
         while True:
@@ -338,20 +341,14 @@ def rotate_robot(at_loading_bay):
                 sleep(1)
                 break
         return
-        
-
-def count_delivery_zones():
-    global prev_color
-    global green_counter
-    global delivering
-    #if prev_color == "green" and delivering:
-        # increment the number of delivery zones we've seen as 
-        #green_counter += 1  
 
 
 def stop():
     """
-    function to stop the driving of the robot
+    function to stop the driving of the robot by setting the speed of the two NXT motors to zero
+    
+    Input - None
+    Output - None
     """
     LEFT_WHEEL_MOTOR.set_dps(0)
     RIGHT_WHEEL_MOTOR.set_dps(0)
@@ -360,6 +357,9 @@ def stop():
 def continue_straight():
     """
     function to make the robot go straight depending on wheel speed
+    
+    Input - None
+    Output - None
     """
     LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
     RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -367,6 +367,9 @@ def continue_straight():
 def go_back():
     """
     function to make the robot go backwared depending on wheel speed
+    
+    Input - None
+    Output - None
     """
     LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
     RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
@@ -375,6 +378,9 @@ def turn_left():
     """
     function that turns the robot left.
     We continuously increase the amount that we're turning by
+    
+    Input - None
+    Output - None
     """
     left_wheel_speed = LEFT_WHEEL_MOTOR.get_dps()
     # flip the sign to get the left wheel moving in the opposite direction
@@ -388,6 +394,9 @@ def turn_right():
     """
     function that turns the robot right.
     We continuously increase the amount that we're turning by
+    
+    Input - None
+    Output - None
     """
     LEFT_WHEEL_MOTOR.set_dps(LEFT_WHEEL_MOTOR.get_dps() + WHEEL_DELTA_SPEED)
     right_wheel_speed = RIGHT_WHEEL_MOTOR.get_dps()
@@ -404,39 +413,41 @@ def perform_delivery(delivery_color_detected):
     global looking
     global delivering
     
-    ROTATING_PLATFORM_MOTOR.set_dps(90)
-    not_delivered = True
-    # stop the driving
-    stop()
-    while not_delivered:
-        # rotate to the corresponding colored cube
-        print("delivery color:"+delivery_color_detected)
-        rotate_platform(delivery_color_detected)
-        green_counter = green_counter + 1
-        print("green_counter:"+str(green_counter))
-        # open and close the trap door
-        open_trap_door()
-        # reset platform to the reference angle
-        reset_to_reference_angle()
-        not_delivered = False
-    
-    # we've delivered the cube, reset to not be looking for a delivery zone
-    looking = False
-    
-    # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
-    if green_counter == 1:
-        # we're at the final delivery zone and not the loading, so rotate the robot
-        rotate_robot(False)
-        delivering = False
+    if delivering:
+        ROTATING_PLATFORM_MOTOR.set_dps(90)
+        not_delivered = True
+        # stop the driving
+        stop()
+        while not_delivered:
+            # rotate to the corresponding colored cube
+            print("delivery color:"+delivery_color_detected)
+            rotate_platform(delivery_color_detected)
+            green_counter = green_counter + 1
+            print("green_counter:"+str(green_counter))
+            # open and close the trap door
+            open_trap_door()
+            # reset platform to the reference angle
+            reset_to_reference_angle()
+            not_delivered = False
         
-    
-    adjust()
-    WHEEL_SPEED = 175
-    WHEEL_DELTA_SPEED = 87.5
+        # we've delivered the cube, reset to not be looking for a delivery zone
+        looking = False
+        
+        # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
+        if green_counter == 6:
+            # we're at the final delivery zone and not the loading, so rotate the robot
+            rotate_robot(False)
+            delivering = False
+            green_counter=0
+            
+        
+        adjust()
+        WHEEL_SPEED = 175
+        WHEEL_DELTA_SPEED = 87.5
         
 def adjust():
     """
-    Turn the robot to be in the middle of the path after each delivery.
+    Function responsible for correcting the robot position to be on track
     """
     print("adjusting")
     if delivering:
@@ -534,6 +545,9 @@ def rotate_platform(delivery_color_detected):
     """
     function to rotate our platform to the correct colored cube.
     uses the degrees that we have found through our tests to rotate to the correct cube
+    
+    Input - delivery_color_detected(str): a String value representing the color detected by the delivery color sensor
+    Ouptut - None
     """
     #ROTATING_PLATFORM_MOTOR.set_dps(90)
     if delivery_color_detected == "red":
@@ -564,16 +578,24 @@ def rotate_platform(delivery_color_detected):
 def reset_to_reference_angle():
     """
     function to reset the rotating dial back to its starting position
+    
+    Input - None
+    Output - None
     """
     ROTATING_PLATFORM_MOTOR.set_position(30)
-    sleep(1)
+    sleep(2)
     ROTATING_PLATFORM_MOTOR.set_position(-8)
-    sleep(1)
+    sleep(2)
     
     
 def run():
     """The run method contains a while loop to constantly poll our input touch sensors
-    and call helper methods to perform corresponding functionalities"""
+    and call helper methods to perform corresponding functionalities
+    
+    Input - None
+    Output - None
+    """
+    
     try:
         global left_delivery_zone
         left_delivery_zone = False
@@ -593,6 +615,8 @@ def run():
         looking = False # boolean that turns true after we've detected the green zone to begin detecting delivery zones
         global going_back_counter#This counter helps the robot go back when it reaches the Loading Bay
         going_back_counter=1000
+        global driving_history
+        driving_history=["white","white","white","white","white"]
         # motor initializations
         init_motor(TRAP_DOOR_MOTOR)
         init_motor(LEFT_WHEEL_MOTOR)
@@ -600,7 +624,14 @@ def run():
         init_motor(ROTATING_PLATFORM_MOTOR)
         while True:
             if(TS.is_pressed()):
+                #perform_delivery("purple")
                 driving= True
+                #while True:
+                    #rgb = DELIVERY_COLOR_SENSOR.get_rgb()
+                    #color_detected = ""
+                    #if None not in rgb:
+                        #color_detected = color_detection_delivery(rgb)
+                    #print(color_detected)
         
             # constantly poll the driving function within a while loop
             drive()
@@ -609,9 +640,9 @@ def run():
                 white_counter+=1
             else:
                 white_counter=0
-            print("white counter: "+str(white_counter))
+            #print("white counter: "+str(white_counter))
             if(white_counter>=40 and driving):
-                print("white adjust")
+                #print("white adjust")
                 adjust()
                 white_counter=0
 #             if TS.is_pressed():
@@ -632,3 +663,4 @@ def run():
 if __name__=='__main__':
     # call the main run function
     run()
+
