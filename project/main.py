@@ -7,7 +7,7 @@ Authors: Evan Boyd, Sahar Fathi, Jean Kaznji, Shyam Desai
 """
 
 """
-DEATH TO DPM!!!!!!!!!!!!!!!!
+Brand new version!!!!!!!!!!!
 """
 
 # imports 
@@ -96,7 +96,6 @@ def drive():
     global driving
     global left_delivery_zone
     global delivery_order
-    global going_back_counter
     global driving_history
     
 
@@ -216,17 +215,13 @@ def drive():
             delivering = True
             driving = False
             green_counter=0
-            going_back_counter=0
-            
-    else:
-        if going_back_counter<30:
-            go_back()
-            going_back_counter+=1
-            # we're not in the driving state as the driving boolean is not true
-            # stop the robot
-        else:
+            while True:
+                go_back()
+                sleep(2)
+                break
             stop()
-    #print("green counter test: "+str(green_counter))
+            
+            
         
 def find_avg_color(lst):
     """
@@ -253,10 +248,6 @@ def rotate_robot(at_loading_bay):
     """
     if not at_loading_bay:
         while True:
-            #Move forward a bit at the last zone
-            continue_straight()
-            sleep(1)
-            
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
             RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -269,6 +260,10 @@ def rotate_robot(at_loading_bay):
             if new_driving_color_detected == "red":
                 stop()
                 sleep(1)
+                break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
                 break
         while True:
             # set the motors to go in opposite directions
@@ -284,6 +279,10 @@ def rotate_robot(at_loading_bay):
                 stop()
                 sleep(1)
                 break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
+                break
         while True:
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
@@ -297,6 +296,10 @@ def rotate_robot(at_loading_bay):
             if new_driving_color_detected == "white":
                 stop()
                 sleep(1)
+                break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
                 break
         return
     else:
@@ -437,15 +440,20 @@ def perform_delivery(delivery_color_detected):
             print("green_counter:"+str(green_counter))
             # open and close the trap door
             open_trap_door()
+            # we've delivered the cube, reset to not be looking for a delivery zone
+            looking = False
             # reset platform to the reference angle
             reset_to_reference_angle()
             not_delivered = False
         
-        # we've delivered the cube, reset to not be looking for a delivery zone
-        looking = False
         
         # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
         if green_counter == 6:
+            while True:
+                #Move forward a bit at the last zone
+                continue_straight()
+                sleep(2)
+                break
             # we're at the final delivery zone and not the loading, so rotate the robot
             rotate_robot(False)
             delivering = False
@@ -470,6 +478,7 @@ def adjust():
             if color_detected == "blue":
                 break
             if color_detected == "green":
+                looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 sleep(0.5)
@@ -485,6 +494,7 @@ def adjust():
             if color_detected == "red":
                 break
             if color_detected == "green":
+                looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 sleep(0.5)
@@ -500,6 +510,7 @@ def adjust():
             if color_detected == "blue":
                 break
             if color_detected == "green":
+                looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 sleep(0.5)
@@ -512,8 +523,10 @@ def adjust():
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
             if color_detected == "white":
+                sleep(0.2)
                 break
             if color_detected == "green":
+                looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 sleep(0.5)
@@ -571,6 +584,7 @@ def adjust():
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
             if color_detected == "white":
+                sleep(0.2)
                 break
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -652,8 +666,6 @@ def run():
         driving = False # not in the driving state until we press the touch sensor to initiate driving
         delivering = True # boolean to check if we are heading out on the path towards delivery zones.
         looking = False # boolean that turns true after we've detected the green zone to begin detecting delivery zones
-        global going_back_counter#This counter helps the robot go back when it reaches the Loading Bay
-        going_back_counter=1000
         global driving_history
         driving_history=["white","white","white","white","white"]
         # motor initializations
@@ -704,4 +716,5 @@ def run():
 if __name__=='__main__':
     # call the main run function
     run()
+
 
