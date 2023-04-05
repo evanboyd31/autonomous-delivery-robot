@@ -7,10 +7,7 @@ Authors: Evan Boyd, Sahar Fathi, Jean Kaznji, Shyam Desai
 """
 
 """
-I documented some of the code but there's still some work I need to do
-I'm going to remove all the unnecessary comments and print statements
-go over my documentation again, to make sure everything is consistent and makes sense
-I just had to run to class but what we have here should be enough to finish with the software documentation
+DEATH TO DPM!!!!!!!!!!!!!!!!
 """
 
 # imports 
@@ -174,7 +171,8 @@ def drive():
             
         if prev_color == "green" and driving_color_detected!="green":
                 sleep(0.2)
-                adjust()
+                if not delivering:
+                    sleep(0.420)
                 adjust()
                 looking=True
                 
@@ -255,6 +253,10 @@ def rotate_robot(at_loading_bay):
     """
     if not at_loading_bay:
         while True:
+            #Move forward a bit at the last zone
+            continue_straight()
+            sleep(1)
+            
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
             RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -312,6 +314,9 @@ def rotate_robot(at_loading_bay):
                 stop()
                 sleep(1)
                 break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
         while True:
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
@@ -326,6 +331,9 @@ def rotate_robot(at_loading_bay):
                 stop()
                 sleep(1)
                 break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
         while True:
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -340,6 +348,9 @@ def rotate_robot(at_loading_bay):
                 stop()
                 sleep(1)
                 break
+            elif new_driving_color_detected=="green":
+                go_back()
+                sleep(0.2)
         return
 
 
@@ -447,7 +458,7 @@ def perform_delivery(delivery_color_detected):
         
 def adjust():
     """
-    Function responsible for correcting the robot position to be on track
+    Turn the robot to be in the middle of the path after each delivery.
     """
     print("adjusting")
     if delivering:
@@ -486,7 +497,7 @@ def adjust():
             color_detected = ""
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
-            if color_detected == "white":
+            if color_detected == "blue":
                 break
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -494,6 +505,20 @@ def adjust():
                 sleep(0.5)
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
             RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+            sleep(0.1)
+        while True:
+            rgb = DRIVING_COLOR_SENSOR.get_rgb()
+            color_detected = ""
+            if None not in rgb:
+                color_detected = color_detection_drive(rgb)
+            if color_detected == "white":
+                break
+            if color_detected == "green":
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.5)
+            LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+            RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
             sleep(0.1)
     else:
         while True:
@@ -531,7 +556,7 @@ def adjust():
             color_detected = ""
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
-            if color_detected == "white":
+            if color_detected == "blue":
                 break
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -539,6 +564,20 @@ def adjust():
                 sleep(0.5)
             LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
             RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+            sleep(0.1)
+        while True:
+            rgb = DRIVING_COLOR_SENSOR.get_rgb()
+            color_detected = ""
+            if None not in rgb:
+                color_detected = color_detection_drive(rgb)
+            if color_detected == "white":
+                break
+            if color_detected == "green":
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.5)
+            LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+            RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
             sleep(0.1)
         
 def rotate_platform(delivery_color_detected):
@@ -626,6 +665,8 @@ def run():
             if(TS.is_pressed()):
                 #perform_delivery("purple")
                 driving= True
+                continue_straight()
+                sleep(0.2)
                 #while True:
                     #rgb = DELIVERY_COLOR_SENSOR.get_rgb()
                     #color_detected = ""
