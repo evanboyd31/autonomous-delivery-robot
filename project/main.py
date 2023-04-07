@@ -7,7 +7,7 @@ Authors: Evan Boyd, Sahar Fathi, Jean Kaznji, Shyam Desai
 """
 
 """
-Brand new version!!!!!!!!!!!
+The best version yet
 """
 
 # imports 
@@ -32,22 +32,22 @@ TRAP_DOOR_MOTOR = Motor('D')#Initializing the NXT motor responsible for opening 
 
 #Constant variables
 MOTOR_POWER_LIMIT = 80 # Power limit for all motors
-MOTOR_SPEED_LIMIT = 300 # speed limit for all motors
+MOTOR_SPEED_LIMIT = 500 # speed limit for all motors
 
-WHEEL_SPEED = 175 # default wheel speed (dps)
-WHEEL_DELTA_SPEED = 87.5 # how much we speed up by when making a turn (dps)
+WHEEL_SPEED = 250 # default wheel speed (dps)
+WHEEL_DELTA_SPEED = 60 # how much we speed up by when making a turn (dps)
 
 ROTATING_PLATFORM_SPEED = 300 # how fast the rotating platform spins (dps)
 TRAP_DOOR_SPEED = 300 # how fast the trap door opens and closes (dps)
 
 
 # CONSTANTS FOR ROTATING THE ROTATING PLATFORM BASED ON OUR TESTS ***
-RED_DEGREES = 45+35
-ORANGE_DEGREES = 2*45 + 35
-YELLOW_DEGREES = 3*45 + 35
-GREEN_DEGREES = 4*45 + 35 + 3
-BLUE_DEGREES = 5*45 + 35
-PURPLE_DEGREES = 6*45 + 35 + 3
+RED_DEGREES = 45+35-3
+ORANGE_DEGREES = 2*45 + 35-3
+YELLOW_DEGREES = 3*45 + 35-3
+GREEN_DEGREES = 4*45 + 35 + 3-3
+BLUE_DEGREES = 5*45 + 35-3
+PURPLE_DEGREES = 6*45 + 35 + 3-3
 
 def init_motor(motor):
     """
@@ -80,6 +80,13 @@ def open_trap_door():
     TRAP_DOOR_MOTOR.set_position(10)    
     sleep(1)
 
+def close_trap_door():
+    TRAP_DOOR_MOTOR.set_dps(300)
+    TRAP_DOOR_MOTOR.set_position(10)
+
+def open_trap_door2():
+    TRAP_DOOR_MOTOR.set_dps(100)
+    TRAP_DOOR_MOTOR.set_position(-200)
     
 def drive():
     """
@@ -148,11 +155,22 @@ def drive():
             while True:
                 isWhite=False
                 if color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())!= None:
-                    isWhite = True if color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())=="white" else False
+                    isWhite = (color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())=="white")
                 continue_straight()
                 if isWhite:
-                    print("performing delivery")
+                    continue_straight()
+                    sleep(0.25)
+                    while color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())==color_deliv_box:
+                        continue_straight()
+                        sleep(0.1)
+                    stop()
+                    close_trap_door()
+                    sleep(0.5)
+                    reset_to_reference_angle()
+                    sleep(1)
                     perform_delivery(color_deliv_box)
+                    stop()
+                    adjust()
                     break
                 sleep(SLEEP)
                     
@@ -171,7 +189,7 @@ def drive():
         if prev_color == "green" and driving_color_detected!="green":
                 sleep(0.2)
                 if not delivering:
-                    sleep(0.420)
+                    sleep(0.4)
                 adjust()
                 looking=True
                 
@@ -439,12 +457,14 @@ def perform_delivery(delivery_color_detected):
             green_counter = green_counter + 1
             print("green_counter:"+str(green_counter))
             # open and close the trap door
-            open_trap_door()
+            open_trap_door2()
             # we've delivered the cube, reset to not be looking for a delivery zone
             looking = False
             # reset platform to the reference angle
-            reset_to_reference_angle()
+            #reset_to_reference_angle()
             not_delivered = False
+            stop()
+            sleep(3)
         
         
         # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
@@ -458,11 +478,14 @@ def perform_delivery(delivery_color_detected):
             rotate_robot(False)
             delivering = False
             green_counter=0
+            close_trap_door()
+            reset_to_reference_angle()
+            sleep(3)
             
         
-        adjust()
-        WHEEL_SPEED = 175
-        WHEEL_DELTA_SPEED = 87.5
+        WHEEL_SPEED = 300
+        WHEEL_DELTA_SPEED = 60
+        
         
 def adjust():
     """
@@ -481,10 +504,11 @@ def adjust():
                 looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.1)
         
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
@@ -497,10 +521,11 @@ def adjust():
                 looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                sleep(0.1)
             
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
@@ -513,26 +538,28 @@ def adjust():
                 looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.1)
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
             color_detected = ""
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
             if color_detected == "white":
-                sleep(0.2)
+                sleep(0.1)
                 break
             if color_detected == "green":
                 looking=True
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                sleep(0.1)
     else:
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
@@ -544,10 +571,11 @@ def adjust():
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                sleep(0.1)
         
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
@@ -559,10 +587,11 @@ def adjust():
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.1)
             
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
@@ -574,25 +603,30 @@ def adjust():
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                sleep(0.1)
         while True:
             rgb = DRIVING_COLOR_SENSOR.get_rgb()
             color_detected = ""
             if None not in rgb:
                 color_detected = color_detection_drive(rgb)
             if color_detected == "white":
-                sleep(0.2)
+                sleep(0.1)
                 break
             if color_detected == "green":
                 LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                sleep(0.5)
-            LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
-            RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-            sleep(0.1)
+                sleep(0.1)
+            else:
+                LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
+                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
+                sleep(0.1)
+    global white_counter
+    white_counter=0
+    
         
 def rotate_platform(delivery_color_detected):
     """
@@ -602,7 +636,7 @@ def rotate_platform(delivery_color_detected):
     Input - delivery_color_detected(str): a String value representing the color detected by the delivery color sensor
     Ouptut - None
     """
-    #ROTATING_PLATFORM_MOTOR.set_dps(90)
+    ROTATING_PLATFORM_MOTOR.set_dps(200)
     if delivery_color_detected == "red":
         ROTATING_PLATFORM_MOTOR.set_position(RED_DEGREES)
         sleep(0.5)
@@ -621,8 +655,6 @@ def rotate_platform(delivery_color_detected):
     elif delivery_color_detected == "blue":
         ROTATING_PLATFORM_MOTOR.set_position(BLUE_DEGREES)
         sleep(0.5)
-    else:
-        reset_to_reference_angle()
     
     # sleep for 6 seconds in order to wait for the platform to get into position
     sleep(3)
@@ -632,13 +664,15 @@ def reset_to_reference_angle():
     """
     function to reset the rotating dial back to its starting position
     
-    Input - None
+    Input - Nonec
     Output - None
     """
-    ROTATING_PLATFORM_MOTOR.set_position(30)
-    sleep(2)
-    ROTATING_PLATFORM_MOTOR.set_position(-8)
-    sleep(2)
+    
+    ROTATING_PLATFORM_MOTOR.set_dps(200)
+    ROTATING_PLATFORM_MOTOR.set_position(0)#was 30 before
+    sleep(1)
+    #ROTATING_PLATFORM_MOTOR.set_position(-8)
+    sleep(1)
     
     
 def run():
@@ -716,5 +750,4 @@ def run():
 if __name__=='__main__':
     # call the main run function
     run()
-
 
