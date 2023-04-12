@@ -7,7 +7,7 @@ Authors: Evan Boyd, Sahar Fathi, Jean Kaznji, Shyam Desai
 """
 
 """
-The best version yet
+Version 5.2
 """
 
 # imports 
