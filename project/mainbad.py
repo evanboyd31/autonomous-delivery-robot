@@ -12,7 +12,6 @@ The best version yet
 
 # imports 
 from utils.brick import TouchSensor, wait_ready_sensors, Motor, BP, EV3ColorSensor
-from utils import sound
 from time import sleep
 from math import sqrt
 from color_detection_two import color_detection_drive, color_detection_delivery # imports for all of our color functionalities
@@ -31,11 +30,6 @@ RIGHT_WHEEL_MOTOR = Motor('B')
 ROTATING_PLATFORM_MOTOR = Motor('C')#Initializing the NXT motor responsible for rotating the platform
 TRAP_DOOR_MOTOR = Motor('D')#Initializing the NXT motor responsible for opening and closing the trap doorr
 
-#Speaker
-sound1 = sound.Sound(duration=0.05,pitch="C5",volume=100)
-sound2 = sound.Sound(duration=0.05,pitch="G4",volume=100)
-
-
 #Constant variables
 MOTOR_POWER_LIMIT = 80 # Power limit for all motors
 MOTOR_SPEED_LIMIT = 500 # speed limit for all motors
@@ -49,7 +43,7 @@ TRAP_DOOR_SPEED = 300 # how fast the trap door opens and closes (dps)
 
 # CONSTANTS FOR ROTATING THE ROTATING PLATFORM BASED ON OUR TESTS ***
 RED_DEGREES = 45+35-3
-ORANGE_DEGREES = 2*45 + 35-3 +5
+ORANGE_DEGREES = 2*45 + 35-3
 YELLOW_DEGREES = 3*45 + 35-3
 GREEN_DEGREES = 4*45 + 35 + 3
 BLUE_DEGREES = 5*45 + 35-3
@@ -75,13 +69,6 @@ def init_motor(motor):
 def close_trap_door():
     TRAP_DOOR_MOTOR.set_dps(300)
     TRAP_DOOR_MOTOR.set_position(10)
-
-def play_sound():
-    sound1.play()
-    sound1.wait_done()
-    sound2.play()
-    sound2.wait_done()
-    
 
 def open_trap_door():
     """
@@ -177,14 +164,14 @@ def drive():
                 if isWhite:
                     continue_straight()
                     sleep(0.8)
-                    while color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())!="white":
+                    while color_detection_delivery(DELIVERY_COLOR_SENSOR.get_rgb())==color_deliv_box:
                         continue_straight()
                         sleep(0.1)
                     stop()
                     close_trap_door()
                     sleep(2)
                     reset_to_reference_angle()
-                    sleep(3)
+                    sleep(2)
                     perform_delivery(color_deliv_box)
                     sleep(3)
                     stop()
@@ -197,7 +184,6 @@ def drive():
                 if not delivering:
                     sleep(0.4)
                 adjust()
-                #sahar this is where u add the secodnd adjust
                 looking=True
                 
         if driving_color_detected == "blue":
@@ -216,6 +202,7 @@ def drive():
                 turn_left()
             else:
                turn_right()
+               
             if prev_color == "green":
                 sleep(0.2)
             prev_color = "red"
@@ -244,7 +231,6 @@ def drive():
                 sleep(2)
                 break
             stop()          
-            play_sound()
         
 def find_avg_color(lst):
     """
@@ -282,8 +268,6 @@ def rotate_robot(at_loading_bay):
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
             
-             
-            
             if new_driving_color_detected == "red":
                 stop()
                 sleep(1)
@@ -291,6 +275,7 @@ def rotate_robot(at_loading_bay):
             elif new_driving_color_detected=="green":
                 go_back()
                 sleep(0.2)
+                break
         while True:
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
@@ -301,8 +286,6 @@ def rotate_robot(at_loading_bay):
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
             
-             
-            
             if new_driving_color_detected == "blue":
                 stop()
                 sleep(1)
@@ -310,6 +293,7 @@ def rotate_robot(at_loading_bay):
             elif new_driving_color_detected=="green":
                 go_back()
                 sleep(0.2)
+                break
         while True:
             # set the motors to go in opposite directions
             LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
@@ -319,7 +303,6 @@ def rotate_robot(at_loading_bay):
             new_driving_color_detected = ""
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
-             
             
             if new_driving_color_detected == "white":
                 stop()
@@ -328,6 +311,7 @@ def rotate_robot(at_loading_bay):
             elif new_driving_color_detected=="green":
                 go_back()
                 sleep(0.2)
+                break
         return
     else:
         while True:
@@ -339,7 +323,6 @@ def rotate_robot(at_loading_bay):
             new_driving_color_detected = ""
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
-             
             
             if new_driving_color_detected == "red":
                 stop()
@@ -357,7 +340,6 @@ def rotate_robot(at_loading_bay):
             new_driving_color_detected = ""
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
-             
             
             if new_driving_color_detected == "blue":
                 stop()
@@ -376,7 +358,6 @@ def rotate_robot(at_loading_bay):
             if None not in rgb:
                 new_driving_color_detected = color_detection_drive(rgb)
             
-             
             if new_driving_color_detected == "white":
                 stop()
                 sleep(1)
@@ -396,6 +377,7 @@ def stop():
     """
     LEFT_WHEEL_MOTOR.set_dps(0)
     RIGHT_WHEEL_MOTOR.set_dps(0)
+    sleep(0.2)
 
 def continue_straight():
     """
@@ -455,8 +437,6 @@ def perform_delivery(delivery_color_detected):
     global green_counter
     global looking
     global delivering
-    global WHEEL_SPEED
-    global WHEEL_DELTA_SPEED
     
     if delivering:
         ROTATING_PLATFORM_MOTOR.set_dps(90)
@@ -470,7 +450,7 @@ def perform_delivery(delivery_color_detected):
             green_counter = green_counter + 1
             print("green_counter:"+str(green_counter))
             # open and close the trap door
-            open_trap_door()
+            open_trap_door2()
             # we've delivered the cube, reset to not be looking for a delivery zone
             looking = False
             # reset platform to the reference angle
@@ -482,35 +462,19 @@ def perform_delivery(delivery_color_detected):
         
         # if we're at the final delivery zone, we want to rotate the robot once the delivery has been carried out
         if green_counter == 6:
-            sleep(2)
             while True:
                 #Move forward a bit at the last zone
-                WHEEL_SPEED = 300 # Normal driving speed 
-                WHEEL_DELTA_SPEED = 100 #Normal rotation speed
-        
-                #setting the dps of the motors
-                LEFT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
-                
                 continue_straight()
-                sleep(1)
+                sleep(2)
                 break
             # we're at the final delivery zone and not the loading, so rotate the robot
             rotate_robot(False)
             delivering = False
             green_counter=0
-            
-            ROTATING_PLATFORM_MOTOR.set_position(PURPLE_DEGREES) 
-            sleep(2)
-            ROTATING_PLATFORM_MOTOR.set_position(RED_DEGREES) 
+            close_trap_door()
             sleep(2)
             reset_to_reference_angle()
             sleep(3)
-            continue_straight()
-            close_trap_door()
-            sleep(1)
-            adjust()
-            
             
         
         WHEEL_SPEED = 300
@@ -751,9 +715,16 @@ def run():
         init_motor(ROTATING_PLATFORM_MOTOR)
         while True:
             if(TS.is_pressed()):
+                #perform_delivery("purple")
                 driving= True
                 continue_straight()
                 sleep(0.2)
+                #while True:
+                    #rgb = DELIVERY_COLOR_SENSOR.get_rgb()
+                    #color_detected = ""
+                    #if None not in rgb:
+                        #color_detected = color_detection_delivery(rgb)
+                    #print(color_detected)
         
             # constantly poll the driving function within a while loop
             drive()
@@ -785,9 +756,5 @@ def run():
 if __name__=='__main__':
     # call the main run function
     run()
-
-
-
-
 
 
