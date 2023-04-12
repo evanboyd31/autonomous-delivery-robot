@@ -131,6 +131,9 @@ def color_detection_drive(rgb):
   """
   Color detection function for the driving color sensor.
   Used to control which way our robot turns.
+  
+  Input - None
+  Output - None
   """
   #normalized vector from hardcoded data for colors
   if pow((pow(rgb[0],2)+pow(rgb[1], 2)+pow(rgb[2],2)), 0.5) == 0:
@@ -174,6 +177,9 @@ def color_detection_drive(rgb):
 def color_detection_delivery(rgb):
   """
   The color detection algorithm that is used for our delivery zone color sensor.
+  
+  Input - None
+  Output - None
   """
   if pow((pow(rgb[0],2)+pow(rgb[1], 2)+pow(rgb[2],2)), 0.5) == 0:
       return ""

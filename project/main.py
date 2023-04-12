@@ -72,21 +72,37 @@ def init_motor(motor):
     except IOError as error:
         print(error)
 
-def close_trap_door():
-    TRAP_DOOR_MOTOR.set_dps(300)
-    TRAP_DOOR_MOTOR.set_position(10)
 
 def play_sound():
+    """
+    This plays two notes at the arrival of the loading bay
+    
+    Input - None
+    Output - None
+    """
+    
     sound1.play()
     sound1.wait_done()
     sound2.play()
     sound2.wait_done()
+
+def close_trap_door():
+    """
+    Function that closes the trap door.
+    Setting TRAP_DOOR_MOTOR to 0 means it is fully closed.
+    This function is called once a we're ready for delivery.
+    
+    Input - None
+    Output - None
+    """
+    TRAP_DOOR_MOTOR.set_dps(300)
+    TRAP_DOOR_MOTOR.set_position(10)
     
 
 def open_trap_door():
     """
     Function that opens the trap door.
-    Setting TRAP_DOOR_MOTOR to -200 means it is fully opened.
+    Setting TRAP_DOOR_MOTOR to -200 means it is fully open.
     This function is called once a cube has been rotated to be above the trap door.
     
     Input - None
@@ -130,21 +146,17 @@ def drive():
         if None not in delivery_rgb:
             delivery_color_detected = color_detection_delivery(delivery_rgb)
         driving_history.append(driving_color_detected)
-        print("Driving color: "+driving_color_detected)
         if not delivering:
             looking=False
         
         if driving_color_detected=="green":
-            print("SEEING GREEN")
             WHEEL_SPEED = 150 #slowing down when Green is detected to make sure we stay on track
             WHEEL_DELTA_SPEED = 50 #slowing down the rotation when Green is detected to make sure we stay on track
         elif looking:
-            print("LOOKING")
             WHEEL_SPEED = 100
             WHEEL_DELTA_SPEED = 50
             
         else:
-            print("Driving normally")
             WHEEL_SPEED = 300 # Normal driving speed 
             WHEEL_DELTA_SPEED = 100 #Normal rotation speed
         
@@ -161,12 +173,9 @@ def drive():
             while (color_deliv_counter<12):
                 rgb = DELIVERY_COLOR_SENSOR.get_rgb()
                 list_deliv_colors.append(color_detection_delivery(rgb))
-                print(color_detection_delivery(rgb))
                 color_deliv_counter+=1
                 
             color_deliv_box = find_avg_color(list_deliv_colors)
-            print("delivery colors: "+str(list_deliv_colors))
-            print(delivery_order)
             
             #Drop the cubes when you see white (indicating that the color sensor is past the delivery zone and the trap door is ready to open)
             while True:
@@ -197,7 +206,6 @@ def drive():
                 if not delivering:
                     sleep(0.4)
                 adjust()
-                #sahar this is where u add the secodnd adjust
                 looking=True
                 
         if driving_color_detected == "blue":
@@ -260,7 +268,6 @@ def find_avg_color(lst):
     return color_list[maximum]
 
 def rotate_robot(at_loading_bay):
-    print("start rotating")
     WHEEL_SPEED = 225 
     WHEEL_DELTA_SPEED = 87.5
     """
@@ -451,6 +458,9 @@ def turn_right():
 def perform_delivery(delivery_color_detected):
     """
     function to perform a delivery based on the color that has been detected
+    
+    Input - delivery_color_detected(str): string of the color of the cube being delivered
+    Output - None
     """
     global green_counter
     global looking
@@ -465,16 +475,13 @@ def perform_delivery(delivery_color_detected):
         stop()
         while not_delivered:
             # rotate to the corresponding colored cube
-            print("delivery color:"+delivery_color_detected)
             rotate_platform(delivery_color_detected)
             green_counter = green_counter + 1
-            print("green_counter:"+str(green_counter))
             # open and close the trap door
             open_trap_door()
             # we've delivered the cube, reset to not be looking for a delivery zone
             looking = False
             # reset platform to the reference angle
-            #reset_to_reference_angle()
             not_delivered = False
             stop()
             sleep(3)
@@ -518,9 +525,11 @@ def perform_delivery(delivery_color_detected):
         
 def adjust():
     """
-    Turn the robot to be in the middle of the path after each delivery.
+    adjusts the robot's placement to be in the middle of the track i.e. between the blue and red lines.
+    
+    Input - None
+    Output - None
     """
-    print("adjusting")
     WHEEL_SPEED = 225 
     WHEEL_DELTA_SPEED = 87.5
         
@@ -667,8 +676,6 @@ def adjust():
                 LEFT_WHEEL_MOTOR.set_dps(-WHEEL_SPEED)
                 RIGHT_WHEEL_MOTOR.set_dps(WHEEL_SPEED)
                 sleep(0.1)
-    global white_counter
-    white_counter=0
     
         
 def rotate_platform(delivery_color_detected):
@@ -699,7 +706,7 @@ def rotate_platform(delivery_color_detected):
         ROTATING_PLATFORM_MOTOR.set_position(BLUE_DEGREES)
         sleep(0.5)
     
-    # sleep for 6 seconds in order to wait for the platform to get into position
+    # sleep for 3 seconds in order to wait for the platform to get into position
     sleep(3)
 
     
@@ -707,12 +714,12 @@ def reset_to_reference_angle():
     """
     function to reset the rotating dial back to its starting position
     
-    Input - Nonec
+    Input - None
     Output - None
     """
     
     ROTATING_PLATFORM_MOTOR.set_dps(100)
-    ROTATING_PLATFORM_MOTOR.set_position(-30)#was 30 before
+    ROTATING_PLATFORM_MOTOR.set_position(-30)
     sleep(1)
     ROTATING_PLATFORM_MOTOR.set_position(0)
     sleep(1)    
@@ -762,17 +769,9 @@ def run():
                 white_counter+=1
             else:
                 white_counter=0
-            #print("white counter: "+str(white_counter))
             if(white_counter>=40 and driving):
-                #print("white adjust")
                 adjust()
                 white_counter=0
-#             if TS.is_pressed():
-#                 # toggle the driving state if the ts has been pressed
-#                 driving = True
-#                 print(driving)
-#             drive()
-#             sleep(SLEEP)
         
 
     except KeyboardInterrupt:
